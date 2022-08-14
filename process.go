@@ -52,8 +52,18 @@ func (p *Process) SetPrefix(prefix string) {
 func (p *Process) SetTotal(v float64) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
+	p.setTotal(v)
+}
+
+func (p *Process) setTotal(v float64) {
 	p.Total = v
 	p.render()
+}
+
+func (p *Process) IncTotal() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	p.setTotal(p.Total + 1)
 }
 
 func (p *Process) SetValue(v float64) {
@@ -62,15 +72,15 @@ func (p *Process) SetValue(v float64) {
 	p.setValue(v)
 }
 
-func (p *Process) Increment() {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
-	p.setValue(p.value + 1)
-}
-
 func (p *Process) setValue(v float64) {
 	p.value = v
 	p.render()
+}
+
+func (p *Process) IncValue() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	p.setValue(p.value + 1)
 }
 
 func (p *Process) render() {
@@ -88,7 +98,7 @@ func (p *Process) render() {
 	_, _ = fmt.Fprintf(
 		w,
 		"\r%s%5.1f%% ["+strings.Repeat("#", done)+strings.Repeat(".", n-done)+"] ["+format+"/"+format+" in %s]",
-		p.Prefix, rate*100, p.value, total, time.Now().Sub(p.startTime),
+		p.Prefix, rate*100, p.value, total, time.Since(p.startTime),
 	)
 
 	if p.value >= total {

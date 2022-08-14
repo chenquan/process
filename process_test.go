@@ -66,22 +66,40 @@ func TestProcess_SetWriter(t *testing.T) {
 	assert.NotEmpty(t, buffer.String())
 }
 
-func TestProcess_Increment(t *testing.T) {
+func TestProcess_IncValue(t *testing.T) {
 	process := Process{
 		Total: 101,
 	}
 	buffer := &bytes.Buffer{}
 	process.SetWriter(buffer)
-	process.Increment()
+	process.IncValue()
 	strs := split(buffer.String())
 	assert.Contains(t, strs, "1.0%")
 	assert.Contains(t, strs, "1/101")
 
 	buffer.Reset()
-	process.Increment()
+	process.IncValue()
 	strs = split(buffer.String())
 	assert.Contains(t, strs, "2.0%")
 	assert.Contains(t, strs, "2/101")
+}
+
+func TestProcess_IncTotal(t *testing.T) {
+	process := Process{
+		Total: 101,
+	}
+	buffer := &bytes.Buffer{}
+	process.SetWriter(buffer)
+	process.IncTotal()
+	strs := split(buffer.String())
+	assert.Contains(t, strs, "0.0%")
+	assert.Contains(t, strs, "0/102")
+
+	buffer.Reset()
+	process.IncTotal()
+	strs = split(buffer.String())
+	assert.Contains(t, strs, "0.0%")
+	assert.Contains(t, strs, "0/103")
 }
 
 func TestProcess_SetPrefix(t *testing.T) {
@@ -91,14 +109,14 @@ func TestProcess_SetPrefix(t *testing.T) {
 	buffer := &bytes.Buffer{}
 	process.SetWriter(buffer)
 	process.SetPrefix("foo")
-	process.Increment()
+	process.IncValue()
 	strs := split(buffer.String())
 	assert.Contains(t, strs, "1.0%")
 	assert.Contains(t, strs, "foo")
 
 	buffer.Reset()
 	process.SetPrefix("bar")
-	process.Increment()
+	process.IncValue()
 	strs = split(buffer.String())
 	assert.Contains(t, strs, "2.0%")
 	assert.Contains(t, strs, "bar")
@@ -111,7 +129,7 @@ func TestProcess_SetTotal(t *testing.T) {
 	}
 	buffer := &bytes.Buffer{}
 	process.SetWriter(buffer)
-	process.Increment()
+	process.IncValue()
 	strs := split(buffer.String())
 	assert.Contains(t, strs, "1/101")
 
@@ -138,6 +156,7 @@ func TestProcess_SetValue(t *testing.T) {
 	assert.Contains(t, strs, "101/101")
 	assert.Contains(t, strs, "100.0%")
 }
+
 func TestProcess_Cancel(t *testing.T) {
 	i := 1
 	process := Process{
